@@ -1,5 +1,22 @@
 import React, { useState } from 'react';
 import './App.css';
+import {
+  Container,
+  Paper,
+  Typography,
+  Box,
+  TextField,
+  Button,
+  IconButton,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Divider,
+  Stack,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 
 function App() {
   const [tab, setTab] = useState('bills');
@@ -91,116 +108,88 @@ function App() {
   };
 
   return (
-    <div className="App app-container">
-      <header className="app-header">
-        <h1>Bills</h1>
-        <p className="subtitle">Quickly add items and prices — total updates live.</p>
-      </header>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h4" gutterBottom>Bills</Typography>
+      <Typography variant="body2" color="text.secondary" gutterBottom>Quickly add items and prices — totals update live.</Typography>
 
-      <nav className="tabs">
-        <button className={tab === 'bills' ? 'tab active' : 'tab'} onClick={() => setTab('bills')}>Bills</button>
-        <button className={tab === 'credit' ? 'tab active' : 'tab'} onClick={() => setTab('credit')}>Credit & Loans</button>
-      </nav>
+      <Stack direction="row" spacing={1} sx={{ my: 2 }}>
+        <Button variant={tab === 'bills' ? 'contained' : 'outlined'} onClick={() => setTab('bills')}>Bills</Button>
+        <Button variant={tab === 'credit' ? 'contained' : 'outlined'} onClick={() => setTab('credit')}>Credit & Loans</Button>
+      </Stack>
 
       {tab === 'bills' && (
-        <div className="card">
-        <div className="header-controls">
-          <label className="currency-selector">
-            Currency
-            <select value={currency} onChange={e => setCurrency(e.target.value)}>
-              {currencies.map(c => (
-                <option key={c.code} value={c.code}>{c.code} ({c.symbol})</option>
+        <Paper sx={{ p: 3 }} elevation={3}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Currency</InputLabel>
+              <Select value={currency} label="Currency" onChange={(e) => setCurrency(e.target.value)}>
+                {currencies.map(c => <MenuItem key={c.code} value={c.code}>{c.code} ({c.symbol})</MenuItem>)}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box sx={{ mb: 2 }}>
+            <Stack spacing={1}>
+              {incomes.map((inc, idx) => (
+                <Box key={inc.id} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <TextField size="small" label={`Income ${idx + 1}`} value={inc.name} onChange={e => updateIncome(inc.id, 'name', e.target.value)} sx={{ flex: 1 }} />
+                  <TextField size="small" label="Amount" value={inc.amount} onChange={e => updateIncome(inc.id, 'amount', e.target.value)} InputProps={{ startAdornment: <span style={{ marginRight: 6 }}>{symbol}</span> }} sx={{ width: 160 }} />
+                  <IconButton color="error" onClick={() => removeIncome(inc.id)}><DeleteIcon /></IconButton>
+                </Box>
               ))}
-            </select>
-          </label>
-        </div>
+            </Stack>
+            <Box sx={{ mt: 1 }}>
+              <Button startIcon={<AddIcon />} onClick={addIncome} variant="contained">Add income</Button>
+            </Box>
+          </Box>
 
-        <div className="income-section">
-          <div className="income-list">
-            {incomes.map((inc, idx) => (
-              <div className="income-row" key={inc.id}>
-                <input
-                  className="income-name"
-                  placeholder={`Income ${idx + 1}`}
-                  value={inc.name}
-                  onChange={e => updateIncome(inc.id, 'name', e.target.value)}
-                />
-                <div className="price-wrap">
-                  <span className="currency">{symbol}</span>
-                  <input
-                    className="income-amount"
-                    placeholder="0.00"
-                    inputMode="decimal"
-                    value={inc.amount}
-                    onChange={e => updateIncome(inc.id, 'amount', e.target.value)}
-                  />
-                </div>
-                <button className="remove" onClick={() => removeIncome(inc.id)} aria-label="Remove income">×</button>
-              </div>
-            ))}
-          </div>
-          <div className="income-controls">
-            <button onClick={addIncome} className="add-btn">Add income</button>
-          </div>
-        </div>
+          <Divider sx={{ my: 2 }} />
 
-        <div className="divider" />
-
-        <div className="items">
-        {items.map((it, idx) => (
-          <div className="item-row" key={it.id}>
-            <select className="item-type" value={it.type || ''} onChange={e => updateItem(it.id, 'type', e.target.value)}>
-              <option value="">Type</option>
-              {types.map(t => (
-                <option key={t} value={t}>{t}</option>
+          <Box>
+            <Stack spacing={1}>
+              {items.map((it, idx) => (
+                <Box key={it.id} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <FormControl size="small" sx={{ width: 160 }}>
+                    <InputLabel>Type</InputLabel>
+                    <Select value={it.type || ''} label="Type" onChange={e => updateItem(it.id, 'type', e.target.value)}>
+                      <MenuItem value="">Type</MenuItem>
+                      {types.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+                    </Select>
+                  </FormControl>
+                  <TextField size="small" placeholder={`Name ${idx + 1}`} value={it.name} onChange={e => updateItem(it.id, 'name', e.target.value)} sx={{ flex: 1 }} />
+                  <TextField size="small" placeholder="0.00" value={it.price} onChange={e => updateItem(it.id, 'price', e.target.value)} InputProps={{ startAdornment: <span style={{ marginRight: 6 }}>{symbol}</span> }} sx={{ width: 140 }} />
+                  <IconButton color="error" onClick={() => removeItem(it.id)}><DeleteIcon /></IconButton>
+                </Box>
               ))}
-            </select>
-            <input
-              className="item-name"
-              placeholder={`Name ${idx + 1}`}
-              value={it.name}
-              onChange={e => updateItem(it.id, 'name', e.target.value)}
-            />
-            <div className="price-wrap">
-              <span className="currency">{symbol}</span>
-              <input
-                className="item-price"
-                placeholder="0.00"
-                inputMode="decimal"
-                value={it.price}
-                onChange={e => updateItem(it.id, 'price', e.target.value)}
-              />
-            </div>
-            <button className="remove" onClick={() => removeItem(it.id)} aria-label="Remove item">×</button>
-          </div>
-        ))}
-        </div>
+            </Stack>
+            <Box sx={{ mt: 1 }}>
+              <Button startIcon={<AddIcon />} onClick={addItem} variant="contained">Add item</Button>
+              <Button onClick={clearAll} sx={{ ml: 1 }} variant="outlined">Clear all</Button>
+            </Box>
+          </Box>
 
-        <div className="controls">
-          <button onClick={addItem} className="add-btn">Add item</button>
-          <button onClick={clearAll} className="clear-btn">Clear all</button>
-        </div>
-
-        <div className="summary">
-          <div className="summary-row"><span>Income total</span><strong>{symbol}{incomeTotal.toFixed(2)}</strong></div>
-          <div className="summary-row"><span>Bills total</span><strong>{symbol}{billsTotal.toFixed(2)}</strong></div>
-          <div className="summary-row net"><span>Net</span><strong>{symbol}{net.toFixed(2)}</strong></div>
-        </div>
-        </div>
+          <Box sx={{ mt: 3 }}>
+            <Stack spacing={1}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography>Income total</Typography><Typography variant="subtitle1">{symbol}{incomeTotal.toFixed(2)}</Typography></Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography>Bills total</Typography><Typography variant="subtitle1">{symbol}{billsTotal.toFixed(2)}</Typography></Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography fontWeight={700}>Net</Typography><Typography variant="h6">{symbol}{net.toFixed(2)}</Typography></Box>
+            </Stack>
+          </Box>
+        </Paper>
       )}
 
       {tab === 'credit' && (
-        <div className="card credit-card">
-          <h2>Credit Card Payoff</h2>
+        <Paper sx={{ p: 3 }} elevation={3}>
+          <Typography variant="h6">Credit Card Payoff</Typography>
           <CreditCalculator symbol={symbol} calculatePayoff={calculatePayoff} />
 
-          <div style={{height:16}} />
+          <Box sx={{height:16}} />
 
-          <h2>Loan Payment (by term)</h2>
+          <Typography variant="h6">Loan Payment (by term)</Typography>
           <LoanCalculator symbol={symbol} computeLoanPayment={computeLoanPayment} />
-        </div>
+        </Paper>
       )}
-    </div>
+    </Container>
   );
 }
 
@@ -211,30 +200,23 @@ function CreditCalculator({ symbol, calculatePayoff }) {
   const res = calculatePayoff(balance || 0, apr || 0, payment || 0);
 
   return (
-    <div className="calculator">
-      <div className="calc-row">
-        <label>Balance</label>
-        <div className="price-wrap"><span className="currency">{symbol}</span><input value={balance} onChange={e=>setBalance(e.target.value)} placeholder="0.00"/></div>
-      </div>
-      <div className="calc-row">
-        <label>APR (%)</label>
-        <input value={apr} onChange={e=>setApr(e.target.value)} placeholder="e.g. 19.99" />
-      </div>
-      <div className="calc-row">
-        <label>Monthly payment</label>
-        <div className="price-wrap"><span className="currency">{symbol}</span><input value={payment} onChange={e=>setPayment(e.target.value)} placeholder="0.00"/></div>
-      </div>
-      <div className="calc-result">
-        {!res && <div className="muted">Enter positive numbers to calculate.</div>}
-        {res && res.warning && <div className="warning">{res.warning}</div>}
+    <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Stack direction="row" spacing={2} alignItems="center">
+        <TextField label="Balance" value={balance} onChange={e=>setBalance(e.target.value)} InputProps={{ startAdornment: <span style={{ marginRight:6 }}>{symbol}</span> }} />
+        <TextField label="APR (%)" value={apr} onChange={e=>setApr(e.target.value)} sx={{ width: 140 }} />
+        <TextField label="Monthly payment" value={payment} onChange={e=>setPayment(e.target.value)} InputProps={{ startAdornment: <span style={{ marginRight:6 }}>{symbol}</span> }} sx={{ width: 160 }} />
+      </Stack>
+      <Box sx={{ mt: 1 }}>
+        {!res && <Typography color="text.secondary">Enter positive numbers to calculate.</Typography>}
+        {res && res.warning && <Typography color="error">{res.warning}</Typography>}
         {res && !res.warning && (
-          <div>
-            <div>Months to pay off: <strong>{res.months}</strong></div>
-            <div>Total interest: <strong>{symbol}{res.totalInterest.toFixed(2)}</strong></div>
-          </div>
+          <Stack spacing={0.5}>
+            <Typography>Months to pay off: <strong>{res.months}</strong></Typography>
+            <Typography>Total interest: <strong>{symbol}{res.totalInterest.toFixed(2)}</strong></Typography>
+          </Stack>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -244,29 +226,22 @@ function LoanCalculator({ symbol, computeLoanPayment }) {
   const [months, setMonths] = useState('');
   const res = computeLoanPayment(principal || 0, apr || 0, months || 0);
   return (
-    <div className="calculator">
-      <div className="calc-row">
-        <label>Principal</label>
-        <div className="price-wrap"><span className="currency">{symbol}</span><input value={principal} onChange={e=>setPrincipal(e.target.value)} placeholder="0.00"/></div>
-      </div>
-      <div className="calc-row">
-        <label>APR (%)</label>
-        <input value={apr} onChange={e=>setApr(e.target.value)} placeholder="e.g. 5.5" />
-      </div>
-      <div className="calc-row">
-        <label>Term (months)</label>
-        <input value={months} onChange={e=>setMonths(e.target.value)} placeholder="e.g. 60" />
-      </div>
-      <div className="calc-result">
-        {!res && <div className="muted">Enter principal and term to compute payment.</div>}
+    <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Stack direction="row" spacing={2} alignItems="center">
+        <TextField label="Principal" value={principal} onChange={e=>setPrincipal(e.target.value)} InputProps={{ startAdornment: <span style={{ marginRight:6 }}>{symbol}</span> }} />
+        <TextField label="APR (%)" value={apr} onChange={e=>setApr(e.target.value)} sx={{ width: 140 }} />
+        <TextField label="Term (months)" value={months} onChange={e=>setMonths(e.target.value)} sx={{ width: 140 }} />
+      </Stack>
+      <Box sx={{ mt: 1 }}>
+        {!res && <Typography color="text.secondary">Enter principal and term to compute payment.</Typography>}
         {res && (
-          <div>
-            <div>Monthly payment: <strong>{symbol}{res.monthly.toFixed(2)}</strong></div>
-            <div>Total interest: <strong>{symbol}{res.totalInterest.toFixed(2)}</strong></div>
-          </div>
+          <Stack spacing={0.5}>
+            <Typography>Monthly payment: <strong>{symbol}{res.monthly.toFixed(2)}</strong></Typography>
+            <Typography>Total interest: <strong>{symbol}{res.totalInterest.toFixed(2)}</strong></Typography>
+          </Stack>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
