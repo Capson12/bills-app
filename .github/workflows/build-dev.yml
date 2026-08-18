@@ -96,11 +96,11 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Push Docs
-        working-directory: frontend/react/prokix-react-app
+        working-directory: frontend/web/react/bills-app
         env:
           VITE_CLARITY_ID: ${{ secrets.DEV_CLARITY_ID }}
         run: |
           npm install
           npm run build
           az storage blob delete-batch -s '$web' --account-name ${{ needs.authenticate-to-azure.outputs.storage_account_name }} --auth-mode key
-          az storage blob upload-batch -d '$web' -s build --account-name ${{ needs.authenticate-to-azure.outputs.storage_account_name }} --auth-mode key --overwrite
+          az storage blob upload-batch -d '$web' -s dist --account-name ${{ needs.authenticate-to-azure.outputs.storage_account_name }} --auth-mode key --overwrite
