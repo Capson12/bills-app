@@ -1,6 +1,6 @@
 locals {
     prefix = "bills-app"
-    name = "billApp"
+    name = "billapp"
     location = "uksouth"
     # dns_domain = "prokixsports.com"
 
