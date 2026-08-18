@@ -9,10 +9,15 @@ import CssBaseline from '@mui/material/CssBaseline';
 const theme = createTheme({
   palette: {
     mode: 'light',
-    primary: { main: '#2563eb' },
-    background: { default: '#f6fbff' }
+    primary: { main: '#0f766e' },
+    secondary: { main: '#0c4a6e' },
+    background: { default: '#eff7ff' }
   },
-  typography: { fontFamily: ['Inter', 'Roboto', 'Arial', 'sans-serif'].join(',') }
+  typography: {
+    fontFamily: ['Poppins', 'Avenir Next', 'Segoe UI', 'sans-serif'].join(','),
+    h5: { fontWeight: 700, letterSpacing: '0.01em' },
+    h6: { fontWeight: 700 },
+  }
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

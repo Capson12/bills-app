@@ -1,0 +1,110 @@
+name: Build Development Environment
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  authenticate-to-azure:
+    permissions: 
+      contents: read
+      id-token: write
+
+    runs-on: ubuntu-latest
+    outputs:
+      storage_account_name: ${{ steps.get_storage.outputs.storage_account_name }}
+    steps:
+
+      - name: login to Azure with OIDC
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.10.5
+
+      - name: Install Terragrunt and OpenTofu
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tg_version: '0.82.2'
+          tofu_version: '1.10.1'
+
+      - name: Set azure environment variables
+        run: |
+          echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_SUBSCRIPTION_ID=${{ secrets.AZURE_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
+          
+      - name: Run terragrunt plan
+        env:
+          TF_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+           cd backend/infrastructure/terragrunt/live/shared
+           terragrunt plan --all --non-interactive -lock=false
+           cd ../dev
+           terragrunt plan --all --non-interactive -lock=false
+        
+      - name: Run terragrunt apply
+        env:
+          TF_VAR_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+           cd backend/infrastructure/terragrunt/live/shared
+           terragrunt apply --all --auto-approve --non-interactive -lock=false
+           cd ../dev
+           terragrunt apply --all --auto-approve --non-interactive -lock=false
+
+
+      - name: Get Storage Account Name
+        id: get_storage
+        run: |
+          cd backend/infrastructure/terragrunt/live/dev/blob-site
+          echo "storage_account_name=$(terragrunt output -raw storage_account_name)" >> $GITHUB_OUTPUT
+
+
+
+  Push-to-storage:
+    needs: authenticate-to-azure
+    runs-on: ubuntu-latest
+
+    permissions: 
+      contents: read
+      id-token: write
+  
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4  # v3 has a known cache path resolution bug
+        with:
+          node-version: '20'
+          
+      - name: login to Azure with OIDC
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Push Docs
+        working-directory: frontend/react/prokix-react-app
+        env:
+          VITE_CLARITY_ID: ${{ secrets.DEV_CLARITY_ID }}
+        run: |
+          npm install
+          npm run build
+          az storage blob delete-batch -s '$web' --account-name ${{ needs.authenticate-to-azure.outputs.storage_account_name }} --auth-mode key
+          az storage blob upload-batch -d '$web' -s dist --account-name ${{ needs.authenticate-to-azure.outputs.storage_account_name }} --auth-mode key --overwrite

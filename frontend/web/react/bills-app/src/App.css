@@ -1,5 +1,46 @@
-.App { }
+:root {
+	--bg-soft: #e7f4ff;
+	--bg-mid: #d5f2ea;
+	--bg-warm: #fff2d8;
+	--nav-ink: #0f172a;
+	--accent: #0f766e;
+}
 
-/* Styling is now provided by MUI; keep a few small helpers */
+body {
+	background:
+		radial-gradient(circle at 8% 8%, var(--bg-warm) 0%, transparent 28%),
+		radial-gradient(circle at 90% 14%, var(--bg-mid) 0%, transparent 35%),
+		linear-gradient(145deg, #f3fbff 0%, var(--bg-soft) 45%, #eff7ff 100%);
+}
+
+.app-shell {
+	min-height: 100vh;
+}
+
+.top-nav {
+	position: sticky;
+	top: 0;
+	z-index: 40;
+	background: linear-gradient(90deg, rgba(12, 74, 110, 0.94), rgba(15, 118, 110, 0.9));
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(12px);
+}
+
+.brand-title {
+	color: #f8fafc;
+	letter-spacing: 0.02em;
+	font-weight: 700;
+}
+
+.nav-btn.MuiButton-contained {
+	background: #f8fafc;
+	color: var(--nav-ink);
+}
+
+.nav-btn.MuiButton-outlined {
+	border-color: rgba(248, 250, 252, 0.6);
+	color: #f8fafc;
+}
+
 .muted { color: #64748b; }
-.warning { color: #b91c1c; font-weight:600; }
+.warning { color: #b91c1c; font-weight: 600; }
