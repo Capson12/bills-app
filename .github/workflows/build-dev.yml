@@ -49,9 +49,7 @@ jobs:
           TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
-           cd backend/infrastructure/terragrunt/live/shared
-           terragrunt plan --all --non-interactive -lock=false
-           cd ../dev
+           cd backend/terragrunt/dev
            terragrunt plan --all --non-interactive -lock=false
         
       - name: Run terragrunt apply
@@ -60,16 +58,14 @@ jobs:
           TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
-           cd backend/infrastructure/terragrunt/live/shared
-           terragrunt apply --all --auto-approve --non-interactive -lock=false
-           cd ../dev
+           cd backend/terragrunt/dev
            terragrunt apply --all --auto-approve --non-interactive -lock=false
 
 
       - name: Get Storage Account Name
         id: get_storage
         run: |
-          cd backend/infrastructure/terragrunt/live/dev/blob-site
+          cd backend/terragrunt/dev/blob-site
           echo "storage_account_name=$(terragrunt output -raw storage_account_name)" >> $GITHUB_OUTPUT
 
 
